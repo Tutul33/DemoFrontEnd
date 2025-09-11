@@ -1,0 +1,21 @@
+a.active {
+  font-weight: 600;
+  border-left: 3px solid #0d6efd;
+  background-color: rgba(13, 110, 253, 0.1);
+  color: #0d6efd !important;
+}
+
+a.active-submenu {
+  font-weight: 600;
+  padding-left: 0.5rem;
+  border-left: 3px solid #0d6efd;
+  color: #0d6efd !important;
+}
+.sidebar-logo {
+  position: sticky;
+  top: 0;
+  z-index: 1001; /* higher than sidebar menu */
+ /* background-color: #f8f9fa;  or whatever your sidebar bg is 
+  padding: 1rem 0;
+  border-bottom: 1px solid #ddd;*/
+}

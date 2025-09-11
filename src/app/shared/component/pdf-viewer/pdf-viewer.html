@@ -1,0 +1,19 @@
+<p-dialog [(visible)]="service._visible"
+          [modal]="true"
+          [style]="{ width: '50vw' }"
+          [contentStyle]="{ height: '90vh', overflow: 'hidden' }"
+          [closable]="true"
+          (onHide)="onDialogClose()">
+  <ng-template pTemplate="header">
+    PDF Viewer
+  </ng-template>
+
+  <ngx-extended-pdf-viewer 
+    [src]="service.pdfSrc()"
+    [height]="'100%'"
+    [textLayer]="true"
+    [zoom]="'100%'"
+    [filenameForDownload]="service.downloadFileName()"
+    >
+  </ngx-extended-pdf-viewer>
+</p-dialog>

@@ -1,0 +1,159 @@
+<button pButton type="button" class="chat-float-btn" (click)="toggleChat()">
+  <i class="bi bi-chat"></i>
+</button>
+
+<div class="chat-panel" [class.show]="chatVisible">
+  <div class="chat-header">
+    <span>Chat</span>
+    <p-button (click)="toggleChat()" styleClass="p-button-sm" severity="warn">
+      <i class="bi bi-x"></i>
+    </p-button>
+  </div>
+
+  <div class="chat-body">
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <input placeholder="Search User" [(ngModel)]="searchUserObj" (keyup)="searchUser()" />
+      </div>
+
+      <div class="chat-sidebar-list">
+        <ul>
+          @for(u of activeUsers; track $index){
+          <li (click)="openChat(u.userName)">
+            <span class="user-status" [ngClass]="{'online': u.isOnline, 'offline': !u.isOnline}"></span>
+            {{ u.userName }}
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="chat-tabs">
+      <p-tabs [(value)]="activeTabIndex" scrollable (valueChange)="onTabChange($event)">
+        <p-tablist>
+          @for(tab of chatTabs; track $index){
+          <p-tab [value]="$index">
+            <span>{{ tab.user }}
+              @if(tab.totalUnread>0){
+              <sup>{{ tab.totalUnread }}</sup>
+              }
+            </span>
+            <span (click)="closeTab(tab)"><i class="bi bi-x"></i></span>
+          </p-tab>
+          }
+        </p-tablist>
+
+        <p-tabpanels>
+          @for(tab of chatTabs;track $index){
+          <p-tabpanel [value]="$index">
+            <div #chatMessagesContainer class="chat-messages" (scroll)="onScroll($event, tab)">
+              @for(m of tab.messages;track $index){
+              <div class="chat-message" [ngClass]="{'me': loggedBy==m.sender, 'other': loggedBy!=m.sender}">
+                <div class="message-wrapper">
+                  <div class="message-content">
+                    <div class="d-flex justify-content-between">
+                      <b>{{ loggedBy == m.sender?'Me': m.sender}}:</b>
+                      <div>
+                        @if(loggedBy==m.sender){<span (click)="editMessage(tab,m)"><i
+                            class="bi bi-trash3-fill text-danger"></i></span>}
+                        @if(!(m.editing) && loggedBy==m.sender){<span (click)="editMessage(tab,m)"><i
+                            class="bi bi-pencil"></i></span>}
+                        @if(m.editing){<span (click)="saveMessage(tab,m)"><i
+                            class="bi bi-floppy-fill text-success"></i></span>}
+                        @if(m.editing){<span (click)="cancelEdit(m)" class="ms-2"><i
+                            class="bi bi-x text-warning"></i></span>}
+                      </div>
+                    </div>
+                    <div>
+                      <div>
+                        @if(!(m.editing)){<span>{{ m.text }}</span>}
+                        @if(m.editing){<input [(ngModel)]="m.text" />}
+                      </div>
+                    </div>
+                    @if(m.files?.length){
+                    <p-divider></p-divider>
+                    <div class="uploaded-files">
+                      @for(f of m.files;track $index){
+                      <div class="uploaded-item">
+                        @if(f.fileUrl.includes('.png')|| f.fileUrl.includes('.jpg')|| f.fileUrl.includes('.jpeg')
+                        ){
+                        <p-image [src]="fileUrl+f.fileUrl" alt="Image" width="40px" height="40px" [preview]="false"
+                          (click)="openPreview(fileUrl+f.fileUrl)" />
+                        }
+                        @else {
+                        <a href="{{fileUrl+f.fileUrl}}"
+                          [ngClass]="{'text-white':loggedBy == m.sender,'text-primary':loggedBy !== m.sender}"
+                          target="_blank">{{f.fileName}}</a>
+                        }
+                        @if(loggedBy==m.sender){
+                        <a href="javascript:void(0)" (click)="deleteFile(tab,f,m)" class="ms-2"><i
+                            class="bi bi-trash3-fill text-danger"></i></a>
+                        }
+                      </div>
+                      }
+                    </div>
+                    }
+                  </div>
+                  <div class="message-date">{{ m.sentDate | date:'shortTime' }}</div>
+                </div>
+              </div>
+
+              }
+              @if(tab.previewFiles?.length){
+              <p-divider></p-divider>
+              <div class="uploaded-files">
+                @for(f of tab.previewFiles;track $index){
+                <div class="uploaded-item">
+                  @if(f.fileType.startsWith('image/')){
+                  <ng-container>
+                    <p-image [src]="f.fileData" alt="{{f.fileName}}" width="40px" height="40px" [preview]="false"
+                      (click)="openPreview(f.fileData)">
+                    </p-image>
+                  </ng-container>
+                  }
+                  @if(!f.fileType.startsWith('image/')){
+                  <span>{{ f.fileName }}</span>
+                  }
+                  <a href="javascript:void(0)" (click)="deleteFile(tab,f)"><i class="bi bi-x"></i></a>
+                </div>
+                }
+              </div>
+              }
+            </div>
+
+            <div class="chat-input">
+              <!-- <input pInputText [(ngModel)]="tab.newMessage" placeholder="Type a message" (keyup.enter)="send(tab)" /> -->
+              <textarea rows="3" cols="70" pTextarea [(ngModel)]="tab.newMessage" placeholder="Type a message"
+                (keyup.enter)="send(tab)"></textarea>
+              <!-- Emoji Button -->
+              <button #emojiButton type="button" class="emoji-btn" (click)="toggleEmojiPicker()">
+                😊
+              </button>
+
+              <!-- Emoji Picker Popover -->
+              <div #emojiPopover class="emoji-picker-popover" *ngIf="showEmojiPicker">
+                <emoji-mart (emojiSelect)="addEmoji($event, tab)" set="apple" [emojiTooltip]="true" [emojiSize]="20"
+                  [sheetSize]="32"></emoji-mart>
+              </div>
+
+              <p-fileUpload name="fileUpload" auto="false" multiple="true" chooseLabel="Attchment" mode="basic"
+                uploadLabel="Upload" cancelLabel="Clear" showUploadButton="false" showCancelButton="true"
+                accept=".png,.jpg,.jpeg,.doc,.docx,.pdf,.xls,.xlsx" (onSelect)="onFilesSelected($event, tab)">
+              </p-fileUpload>
+
+              <p-button (click)="send(tab)" severity="success"><i class="bi bi-arrow-right"></i></p-button>
+            </div>
+          </p-tabpanel>
+          }
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+  </div>
+</div>
+<p-dialog [(visible)]="previewVisible" [modal]="true" [closable]="true" [dismissableMask]="true"
+  [style]="{width: '60vw', height: '100%'}" header="View" (onHide)="onDialogClose()">
+  <div class="d-flex justify-content-between">
+    <a href="{{previewImage}}" class="fs-1" target="_blank"><i class="bi bi-cloud-download"></i></a>
+    <img [src]="previewImage" alt="Preview" class="ms-2" class="preview-large" />
+  </div>   
+</p-dialog>

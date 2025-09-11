@@ -1,0 +1,140 @@
+<p-card header="Demo Entry Form">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Demo Info -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label>Name</label><br>
+        <input pInputText formControlName="name" class="w-100" />
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <div class="text-danger">
+          Name is required
+        </div>
+        }
+      </div>
+      <div class="col-md-3">
+        <label>Date</label><br>
+        <p-datepicker formControlName="createDate" dateFormat="yy-mm-dd" [showIcon]="true" class="w-100"></p-datepicker>
+        @if (form.get('createDate')?.invalid && form.get('createDate')?.touched) {
+        <div class="text-danger">
+          Date is required
+        </div>
+        }
+      </div>
+
+    </div>
+
+    <p-divider></p-divider>
+
+    <!-- Items -->
+    <ng-container formArrayName="demoItems">
+      @for (item of demoItems.controls; track i; let i = $index) {
+      @if(item.get('tag').value!=2){
+      <div [formGroupName]="i" class="mb-3 p-3 border-1 surface-border rounded" style="border: 1px black dashed;">
+
+        <div class="row">
+          <div class="col-md-4">
+            <label>Name</label><br>
+            <input pInputText formControlName="name" class="w-100" />
+            @if (item.get('name')?.invalid && item.get('name')?.touched) {
+            <div class="text-danger">
+              Name is required
+            </div>
+            }
+          </div>
+          <div class="col-md-4">
+            <label>Title</label><br>
+            <input pInputText formControlName="title" class="w-100" />
+          </div>
+          <div class="col-md-4">
+            <label>Description</label><br>
+            <textarea pInputTextarea formControlName="description" class="w-100"></textarea>
+          </div>
+        </div>
+
+        <!-- Attachments Table -->
+        <ng-container formArrayName="demoItemFileAttachments">
+          @if(attachmentsAt(i).length > 0){
+          <p-table [value]="attachmentsAt(i).controls" size="small" [tableStyle]="{'min-width':'40rem'}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>File Name</th>
+                <th>Preview</th>
+                <th>Action</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-att let-j="rowIndex">
+              <tr [formGroupName]="j" *ngIf="attachmentsAt(i).at(j).get('tag').value!==EntityState.Deleted">
+                <td>
+                  <div class="d-flex justify-content-start">
+                    <p-fileupload #fu mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]"
+                      [multiple]="false" accept="image/*" maxFileSize="10000000" styleClass="p-button-sm" [auto]="true"
+                      (onSelect)="onFileSelect($event,i,j)" />
+                    <!-- <div class="mt-1">
+                      <small class="text-muted">
+                        {{ attachmentsAt(i).at(j).get('fileName')?.value }}
+                      </small>
+                    </div> -->
+                  </div>
+                  @if(attachmentsAt(i).at(j).get('fileName')?.invalid &&
+                  attachmentsAt(i).at(j).get('fileName')?.touched)
+                  {
+                  <div class="text-danger small">
+                    File is required.
+                  </div>
+                  }
+                </td>
+                <td>
+                  @if(attachmentsAt(i).at(j).get('id')?.value>0 &&
+                  attachmentsAt(i).at(j).get('tag')?.value==EntityState.Unchanged)
+                  {
+                  <!-- <img [src]="fileUrl + attachmentsAt(i).at(j).get('filePath')?.value" alt="preview"
+                    class="ms-2 border rounded" style="width:40px; height:40px; object-fit:cover;" /> -->
+                  <p-image [src]="fileUrl + attachmentsAt(i).at(j).get('filePath')?.value" alt="Image" width="40px"
+                    height="40px" [preview]="true" />
+                  }
+                  @else{
+                  @if(attachmentsAt(i).at(j)['previewUrl']){
+                  <!-- <img [src]="attachmentsAt(i).at(j)['previewUrl']" alt="preview" class="ms-2 border rounded"
+                    style="width:40px; height:40px; object-fit:cover;" /> -->
+                     <p-image [src]="attachmentsAt(i).at(j)['previewUrl']" alt="Image" width="40px"
+                    height="40px" [preview]="true" />
+                  }
+                  }
+                </td>
+                <td>
+                  <p-button type="button" severity="danger" styleClass="p-button-sm" (click)="removeAttachment(i,j)"><i
+                      class="bi bi-trash"></i></p-button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          }
+
+        </ng-container>
+        <div class="d-flex justify-content-between">
+          <p-button type="button" label="Add File" (click)="addAttachment(i)" styleClass="mt-2 p-button-sm"><i
+              class="bi bi-paperclip"></i></p-button>
+          <p-button type="button" severity="danger" (click)="removeItem(i)" styleClass="mt-2 ms-1 p-button-sm "><i
+              class="bi bi-trash"></i></p-button>
+        </div>
+
+      </div>
+      }
+      }
+    </ng-container>
+
+    <p-button type="button" label="Add Item" styleClass="p-button-sm" (click)="addItem()"><i
+        class="bi bi-bag"></i></p-button>
+
+    <p-divider></p-divider>
+
+    <div class="d-flex justify-content-end gap-2">
+      <p-button label="Clear" styleClass="p-button-sm" (click)="clearForm()" severity="danger"></p-button>
+      <p-button label="Reset" styleClass="p-button-sm" (click)="resetForm()" severity="warn"></p-button>
+      <p-button type="submit" label="Save" icon="pi pi-check"
+        styleClass="p-button-sm"></p-button><!--[disabled]="form.invalid"-->
+    </div>
+
+  </form>
+</p-card>

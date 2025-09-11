@@ -1,0 +1,16 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @for (crumb of breadcrumbs; track $index) {
+        <li class="breadcrumb-item">
+            @if (crumb !== breadcrumbs[breadcrumbs.length - 1]) 
+            {
+            <a [routerLink]="crumb.url">{{ crumb.label }}</a>
+            } 
+            @else {
+            {{ crumb.label }}
+            }
+        </li>
+        }
+    </ol>
+</nav>
+<p-divider></p-divider>

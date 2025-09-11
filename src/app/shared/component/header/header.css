@@ -1,0 +1,12 @@
+.user-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;   /* circle size */
+  height: 37px;
+  border-radius: 50%;
+  border: 2px solid #fff; /* white border */
+  background-color: #0d6efd; /* Bootstrap primary */
+  color: #fff;
+  font-size: 20px;
+}
