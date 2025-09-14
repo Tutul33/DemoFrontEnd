@@ -76,4 +76,10 @@ export class VoucherDataService {
             refer
         );
     }
+    saveUpdateVoucher(refer:any): Observable<any> {
+        return this.http.post<any>(
+            this.url+`SaveUpdateVoucher`,
+            refer
+        );
+    }
 }

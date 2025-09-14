@@ -55,6 +55,7 @@ public menuItemsSubject: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([
         { label: 'User Role', hasAccess: false, route: '/admin/user-role' }
       ]
     },
+    { label: 'Vocuher Entry', hasAccess: false, route: '/accounting/voucher-entry' },
     { label: 'Check Pending', hasAccess: false, route: '/accounting/voucher-approval', queryParam: { status: 'check-pending' } },
     { label: 'Approval Pending', hasAccess: false, route: '/accounting/voucher-approval', queryParam: { status: 'approval-pending' } },
     { label: 'Referral Pending', hasAccess: false, route: '/accounting/voucher-approval', queryParam: { status: 'referral-pending' } },

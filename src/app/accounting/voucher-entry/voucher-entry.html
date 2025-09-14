@@ -1,0 +1,41 @@
+<div class="p-fluid">
+  <p-select [options]="voucherTypes" formControlName="voucherType" placeholder="Select Voucher Type"></p-select>
+
+  <p-table [value]="entries.controls" dataKey="lineOrder" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Account Head</th>
+        <th>SubLedger</th>
+        <th>Debit</th>
+        <th>Credit</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-entry let-i="rowIndex">
+      <tr [formGroup]="entry">
+        <td>
+          <p-select 
+            [options]="getFilteredAccountHeads(entry)"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="accountHeadId"
+            placeholder="Select AccountHead">
+          </p-select>
+        </td>
+        <td>
+          <p-select [options]="subLedgers" optionLabel="name" optionValue="id" formControlName="subLedgerId" placeholder="Select SubLedger"></p-select>
+        </td>
+        <td><input type="number" pInputText formControlName="debit" /></td>
+        <td><input type="number" pInputText formControlName="credit" /></td>
+        <td><input pInputText formControlName="description" /></td>
+        <td>
+          <button pButton icon="pi pi-trash" type="button" (click)="removeEntry(i)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <button pButton type="button" label="Add Entry" icon="pi pi-plus" (click)="addEntry()" *ngIf="voucherType === 'Journal'"></button>
+  <button pButton type="button" label="Save Voucher" icon="pi pi-check" (click)="saveVoucher()"></button>
+</div>
