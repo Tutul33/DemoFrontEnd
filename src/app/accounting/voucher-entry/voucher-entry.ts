@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { VoucherDataService } from '../services/voucher/voucher.data.service';
-import { VoucherModelService } from '../services/voucher/voucher.model.service';
-import { EntityState } from '../../shared/models/javascriptMethods';
+import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { VoucherDataService } from '../services/voucher/voucher.data.service';
+import { VoucherModelService } from '../services/voucher/voucher.model.service';
+import { InformationService } from '../../shared/services/information-service';
+import { EntityState } from '../../shared/models/javascriptMethods';
+
 enum VoucherType {
   Payment = 'Payment',
   Receipt = 'Receipt',
@@ -12,24 +18,28 @@ enum VoucherType {
   Journal = 'Journal'
 }
 
-interface AccountHead {
+export interface AccountHead {
   id: number;
   name: string;
-  type: 'CashBank' | 'Expense' | 'Income' | 'Other';
+  type: 'CashBank' | 'Expense' | 'Income' | 'Liability' | 'Asset';
 }
 
-interface SubLedger {
+export interface SubLedger {
   id: number;
   name: string;
+  parentLedgerIds?: number[];
 }
+
 @Component({
   selector: 'app-voucher-entry',
-  imports: [SelectModule,TableModule,FormsModule,ReactiveFormsModule],
   templateUrl: './voucher-entry.html',
-  styleUrl: './voucher-entry.css'
+  styleUrls: ['./voucher-entry.css'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SelectModule, TableModule, ButtonModule, InputTextModule, TextareaModule],
+  providers: [VoucherDataService]
 })
 export class VoucherEntry {
-form!: FormGroup;
+  form!: FormGroup;
   voucherTypes = Object.values(VoucherType);
   voucherType!: VoucherType;
 
@@ -43,12 +53,17 @@ form!: FormGroup;
   ];
 
   subLedgers: SubLedger[] = [
-    { id: 1, name: 'Employee A' },
-    { id: 2, name: 'Customer B' },
-    { id: 3, name: 'Supplier C' },
+    { id: 1, name: 'Employee A', parentLedgerIds: [3, 4] },
+    { id: 2, name: 'Customer B', parentLedgerIds: [5] },
+    { id: 3, name: 'Supplier C', parentLedgerIds: [6] },
   ];
 
-  constructor(private fb: FormBuilder, private dataService: VoucherDataService,public modelSvc: VoucherModelService,) {}
+  constructor(
+    private fb: FormBuilder,
+    private dataService: VoucherDataService,
+    public modelSvc: VoucherModelService,
+    public infoSvc: InformationService
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -69,17 +84,24 @@ form!: FormGroup;
     this.voucherType = VoucherType.Journal;
     this.initEntries(this.voucherType);
 
-    this.form.get('voucherType')?.valueChanges.subscribe((val) => {
-      this.onVoucherTypeChange(val);
-    });
+    this.form.get('voucherType')?.valueChanges.subscribe(val => this.onVoucherTypeChange(val));
   }
 
   get entries(): FormArray {
     return this.form.get('entries') as FormArray;
   }
 
-  createEntry(debitDisabled = false, creditDisabled = false, tag: any = EntityState.Added): FormGroup {
-    return this.fb.group(
+  onLedgerChange(entry: FormGroup, ledgerId: number) {
+    const filtered = this.subLedgers.filter(s => s.parentLedgerIds?.includes(ledgerId));
+    entry.patchValue({ subLedgerId: null }); // reset subledger
+    entry['filteredSubLedgers'] = filtered;  // optional if you store per row
+  }
+  
+  createEntry(tag: any = EntityState.Added): FormGroup {
+    const debitDisabled = this.voucherType === VoucherType.Payment || this.voucherType === VoucherType.Receipt ? true : false;
+    const creditDisabled = this.voucherType === VoucherType.Payment || this.voucherType === VoucherType.Receipt ? false : false;
+
+    const group = this.fb.group(
       {
         entryId: [0],
         accountHeadId: [null, Validators.required],
@@ -92,31 +114,58 @@ form!: FormGroup;
       },
       { validators: this.debitOrCreditValidator }
     );
+
+    // Dynamic subledger validation
+    group.get('accountHeadId')?.valueChanges.subscribe((headId) => {
+      const subLedgerCtrl = group.get('subLedgerId');
+      const account = this.accountHeads.find(a => a.id === headId);
+
+      if (this.voucherType === VoucherType.Contra) {
+        subLedgerCtrl?.clearValidators();
+        group.get('debit')?.enable();
+        group.get('credit')?.enable();
+      } else if (account && account.type !== 'CashBank') {
+        subLedgerCtrl?.setValidators(Validators.required);
+        group.get('debit')?.enable();
+        group.get('credit')?.disable();
+      } else if (account && account.type === 'CashBank') {
+        subLedgerCtrl?.clearValidators();
+        group.get('debit')?.disable();
+        group.get('credit')?.enable();
+      }
+
+      subLedgerCtrl?.updateValueAndValidity({ emitEvent: false });
+    });
+
+    return group;
   }
+
 
   initEntries(type: VoucherType) {
     this.entries.clear();
+
     switch (type) {
       case VoucherType.Payment:
-        this.entries.push(this.createEntry(false, true));
-        this.entries.push(this.createEntry(true, false));
+        this.entries.push(this.createEntry()); // debit line
+        this.entries.push(this.createEntry()); // credit line
         break;
 
       case VoucherType.Receipt:
-        this.entries.push(this.createEntry(false, true));
-        this.entries.push(this.createEntry(true, false));
+        this.entries.push(this.createEntry());
+        this.entries.push(this.createEntry());
         break;
 
       case VoucherType.Contra:
-        this.entries.push(this.createEntry(false, false));
-        this.entries.push(this.createEntry(false, false));
+        this.entries.push(this.createEntry());
+        this.entries.push(this.createEntry());
         break;
 
       case VoucherType.Journal:
-        this.addEntry();
+        this.addEntry(); // all editable
         break;
     }
   }
+
 
   onVoucherTypeChange(type: VoucherType) {
     this.voucherType = type;
@@ -124,7 +173,7 @@ form!: FormGroup;
   }
 
   addEntry(): void {
-    this.entries.push(this.createEntry(false, false, EntityState.Added));
+    this.entries.push(this.createEntry(EntityState.Added));
   }
 
   removeEntry(index: number): void {
@@ -143,27 +192,31 @@ form!: FormGroup;
   }
 
   getFilteredAccountHeads(entry: FormGroup): AccountHead[] {
-    // Filter AccountHeads based on voucher type and whether this line is debit/credit
     const debitDisabled = entry.get('debit')?.disabled;
     const creditDisabled = entry.get('credit')?.disabled;
 
     if (this.voucherType === VoucherType.Payment) {
       return debitDisabled
-        ? this.accountHeads.filter(a => a.type === 'CashBank') // credit line
-        : this.accountHeads.filter(a => a.type === 'Expense');  // debit line
+        ? this.accountHeads.filter(a => a.type === 'CashBank')
+        : this.accountHeads.filter(a => a.type === 'Expense');
     }
 
     if (this.voucherType === VoucherType.Receipt) {
       return debitDisabled
-        ? this.accountHeads.filter(a => a.type === 'Income')   // credit line
-        : this.accountHeads.filter(a => a.type === 'CashBank');// debit line
+        ? this.accountHeads.filter(a => a.type === 'Income')
+        : this.accountHeads.filter(a => a.type === 'CashBank');
     }
 
     if (this.voucherType === VoucherType.Contra) {
       return this.accountHeads.filter(a => a.type === 'CashBank');
     }
 
-    return this.accountHeads; // Journal: no restriction
+    return this.accountHeads;
+  }
+
+  getFilteredSubLedgers(entry: FormGroup): SubLedger[] {
+    const ledgerId = entry.get('accountHeadId')?.value;
+    return this.subLedgers.filter(s => s.parentLedgerIds?.includes(ledgerId));
   }
 
   validateTotals(): boolean {
@@ -186,13 +239,17 @@ form!: FormGroup;
     }
 
     if (!this.validateTotals()) {
-      alert('Total debit must equal total credit and be greater than 0!');
+      this.infoSvc.showWarningMsg('Total debit must equal total credit and be greater than 0!');
       return;
+    }
+
+    if (this.voucherType === VoucherType.Contra) {
+      this.entries.controls.forEach(e => e.patchValue({ subLedgerId: null }));
     }
 
     const payload = this.form.getRawValue();
     this.dataService.saveUpdateVoucher(payload).subscribe({
-      next: () => alert('Voucher saved successfully!'),
+      next: () => this.infoSvc.showWarningMsg('Voucher saved successfully!'),
       error: (err) => console.error('Save error', err),
     });
   }

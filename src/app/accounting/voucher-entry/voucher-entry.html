@@ -1,6 +1,12 @@
-<div class="p-fluid">
-  <p-select [options]="voucherTypes" formControlName="voucherType" placeholder="Select Voucher Type"></p-select>
+<form [formGroup]="form" class="p-fluid">
+  <!-- Voucher Type -->
+  <p-select
+    [options]="voucherTypes"
+    formControlName="voucherType"
+    placeholder="Select Voucher Type">
+  </p-select>
 
+  <!-- Voucher Entries Table -->
   <p-table [value]="entries.controls" dataKey="lineOrder" responsiveLayout="scroll">
     <ng-template pTemplate="header">
       <tr>
@@ -12,30 +18,63 @@
         <th></th>
       </tr>
     </ng-template>
+
     <ng-template pTemplate="body" let-entry let-i="rowIndex">
       <tr [formGroup]="entry">
+        <!-- Account Head -->
         <td>
-          <p-select 
+          <p-select
             [options]="getFilteredAccountHeads(entry)"
             optionLabel="name"
             optionValue="id"
             formControlName="accountHeadId"
-            placeholder="Select AccountHead">
+            placeholder="Select Account Head"
+            appendTo="body"
+            (onChange)="onLedgerChange(entry, $event.value)">
           </p-select>
         </td>
+
+        <!-- SubLedger -->
         <td>
-          <p-select [options]="subLedgers" optionLabel="name" optionValue="id" formControlName="subLedgerId" placeholder="Select SubLedger"></p-select>
+          <p-select
+            [options]="getFilteredSubLedgers(entry)"
+            optionLabel="name"
+            optionValue="id"
+            formControlName="subLedgerId"
+            placeholder="Select SubLedger"
+            appendTo="body"
+            [disabled]="getFilteredSubLedgers(entry).length === 0">
+          </p-select>
         </td>
-        <td><input type="number" pInputText formControlName="debit" /></td>
-        <td><input type="number" pInputText formControlName="credit" /></td>
-        <td><input pInputText formControlName="description" /></td>
+
+        <!-- Debit & Credit -->
         <td>
-          <button pButton icon="pi pi-trash" type="button" (click)="removeEntry(i)"></button>
+          <input type="number" pInputText formControlName="debit" />
+        </td>
+        <td>
+          <input type="number" pInputText formControlName="credit" />
+        </td>
+
+        <!-- Description -->
+        <td>
+          <textarea rows="2" cols="30" pTextarea formControlName="description"></textarea>
+        </td>
+
+        <!-- Remove Entry -->
+        <td>
+          <span class="cursor-pointer" (click)="removeEntry(i)">
+            <i class="bi bi-trash"></i>
+          </span>
         </td>
       </tr>
     </ng-template>
   </p-table>
 
-  <button pButton type="button" label="Add Entry" icon="pi pi-plus" (click)="addEntry()" *ngIf="voucherType === 'Journal'"></button>
-  <button pButton type="button" label="Save Voucher" icon="pi pi-check" (click)="saveVoucher()"></button>
-</div>
+  <!-- Add Entry Button (for Journal type only) -->
+  <div *ngIf="form.get('voucherType')?.value === 'Journal'" class="mt-2">
+    <button pButton type="button" label="Add Entry" icon="pi pi-plus" class="p-button-sm" (click)="addEntry()"></button>
+  </div>
+
+  <!-- Save Voucher -->
+  <button pButton type="button" label="Save Voucher" icon="pi pi-check" class="p-button-sm ms-1" (click)="saveVoucher()"></button>
+</form>

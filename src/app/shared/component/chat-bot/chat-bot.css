@@ -1,0 +1,102 @@
+
+.chat-panel {
+  position: fixed;
+  right: 10px;
+  bottom: 75px;
+  width: 500px;
+  max-height: 500px;
+  background: #fff;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  margin: 5px;
+
+  /* Hidden by default using opacity & transform */
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  pointer-events: none;
+
+  /* Transition for smooth animation */
+  transition: all 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+.chat-panel::after {
+  content: "";
+  position: absolute;
+  bottom: -10px; /* positioned below the panel */
+  right: 15px; /* distance from left edge */
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #fff; /* matches panel background */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15)); /* subtle shadow */
+}
+
+.chat-panel.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto; /* enable interaction when visible */
+}
+
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background-color: #007ad9;
+  color: #fff;
+  align-items: center;
+  flex-shrink: 0;           /* header fixed height */
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.chat-body {
+  display: flex;
+  flex: 1;                  /* take remaining height of panel */
+  overflow: hidden;          /* prevent outer overflow */
+}
+.chat-float-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    border-radius: 50%;
+    color: green;
+    border-color: green;
+    background-color: white;
+
+    width: 50px;       /* increase width */
+    height: 50px;      /* increase height */
+    font-size: 24px;   /* increase icon size inside button */
+
+    box-shadow: 0 4px 8px rgba(138, 43, 226, 0.6);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-float-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(138, 43, 226, 0.8);
+}
+
+.chat-float-btn.bot {
+  right: 20px;
+  bottom: 20px;
+  background-color: white;
+  color: #007ad9;
+}
+
+.chat-input {
+  flex-shrink: 0;           /* input stays at bottom */
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  border-top: 1px solid #ccc;
+  background: #f9f9f9;
+}

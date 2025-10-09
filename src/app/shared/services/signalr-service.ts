@@ -112,4 +112,8 @@ export class SignalRService {
   getMessages(user1: string, user2: string, page: number, pageSize: number): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(`${this.url}api/chat/messages/${user1}/${user2}?page=${page}&pageSize=${pageSize}`);
   }
+
+  chatWithBot(msg: any): Observable<any> {
+    return this.http.post<any>(`${this.url}api/chat/ChatWithBOT`, msg);
+  }
 }

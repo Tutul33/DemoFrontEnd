@@ -48,6 +48,19 @@
   border-radius: 10px;
 }
 
+.chat-panel::after {
+  content: "";
+  position: absolute;
+  bottom: -10px; /* positioned below the panel */
+  left: 15px; /* distance from left edge */
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #fff; /* matches panel background */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15)); /* subtle shadow */
+}
+
 .chat-panel.show {
   opacity: 1;
   transform: translateY(0) scale(1);

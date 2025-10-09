@@ -35,6 +35,11 @@
               },
               {
                 "glob": "**/*",
+                "input": "node_modules/primeicons/fonts",
+                "output": "assets/fonts"
+              },
+              {
+                "glob": "**/*",
                 "input": "node_modules/ngx-extended-pdf-viewer/assets",
                 "output": "/assets/"
               }
@@ -43,6 +48,7 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/@ctrl/ngx-emoji-mart/picker.css",
+              "node_modules/primeicons/primeicons.css",
               "src/styles.css"
             ],
             "scripts": [

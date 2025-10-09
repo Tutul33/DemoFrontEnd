@@ -149,8 +149,10 @@ export class Chat implements AfterViewChecked {
         this.handleFileDelete(sender, msg)
       });
       this.signalR.onActiveUsers(users => {
-        const activeUserNames = users.filter(u => u !== this.loggedBy);
-        this.activeUsers.forEach(u => u.isOnline = activeUserNames.includes(u.userName));
+        setTimeout(() => {
+          const activeUserNames = users.filter(u => u !== this.loggedBy);
+          this.activeUsers.forEach(u => u.isOnline = activeUserNames.includes(u.userName));
+        }, 50);
       });
     });
   }

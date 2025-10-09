@@ -12,10 +12,11 @@ import { selectIsLoggedIn } from '../shared/store/auth.selectors';
 import { logout } from '../shared/store/auth.actions';
 import { Breadcrumbs } from '../shared/component/breadcrumbs/breadcrumbs';
 import { Chat } from '../shared/component/chat/chat';
+import { ChatBot } from '../shared/component/chat-bot/chat-bot';
 
 @Component({
   selector: 'app-default',
-  imports: [CommonModule, Sidebar, Header, RouterOutlet, AsyncPipe, Footer,Breadcrumbs,Chat],
+  imports: [CommonModule, Sidebar, Header, RouterOutlet, AsyncPipe, Footer,Breadcrumbs,Chat,ChatBot],
   templateUrl: './default.html',
   styleUrl: './default.css'
 })
