@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
-import { MessageService } from 'primeng/api';
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +7,7 @@ import { MessageService } from 'primeng/api';
 export class ConfirmationDialogService {
 
   constructor(
-    private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private confirmationService: ConfirmationService
   ) {}
 
   confirm(options: {
@@ -18,6 +16,7 @@ export class ConfirmationDialogService {
     icon?: string,
     acceptLabel?: string,
     rejectLabel?: string,
+    style?: string,
     onAccept: () => void,
     onReject?: () => void
   }) {
