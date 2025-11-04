@@ -121,20 +121,19 @@
               }
             </div>
 
-            <div class="chat-input">
-              <!-- <input pInputText [(ngModel)]="tab.newMessage" placeholder="Type a message" (keyup.enter)="send(tab)" /> -->
-              <textarea rows="3" cols="70" pTextarea [(ngModel)]="tab.newMessage" placeholder="Type a message"
+            <div class="chat-input">              
+              <textarea rows="3" cols="70" style="width: 100%;" pTextarea [(ngModel)]="tab.newMessage" placeholder="Type a message"
                 (keyup.enter)="send(tab)"></textarea>
-              <!-- Emoji Button -->
+             
               <button #emojiButton type="button" class="emoji-btn" (click)="toggleEmojiPicker()">
                 😊
               </button>
-
-              <!-- Emoji Picker Popover -->
-              <div #emojiPopover class="emoji-picker-popover" *ngIf="showEmojiPicker">
+             @if(showEmojiPicker){
+              <div #emojiPopover class="emoji-picker-popover" >
                 <emoji-mart (emojiSelect)="addEmoji($event, tab)" set="apple" [emojiTooltip]="true" [emojiSize]="20"
                   [sheetSize]="32"></emoji-mart>
               </div>
+            }
 
               <p-fileUpload name="fileUpload" auto="false" multiple="true" chooseLabel="Attchment" mode="basic"
                 uploadLabel="Upload" cancelLabel="Clear" showUploadButton="false" showCancelButton="true"
